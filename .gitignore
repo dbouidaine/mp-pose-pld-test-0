@@ -1,0 +1,5 @@
+/venv
+/input/*
+/output/black_videos/**
+/output/landmarks/**
+/output/videos/**

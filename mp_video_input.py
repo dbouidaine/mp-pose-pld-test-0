@@ -43,8 +43,8 @@ del argv[0]
 for link in files:
     print(link)
     cap = cv2.VideoCapture(input_path+'/'+link)
-    out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 20,(640,480))
-    file_landmarks = open(output_path+'/landmarks/'+link, 'w+')
+    out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('J','P','E','G'), 60,(640,480))
+    file_landmarks = open(output_path+'/landmarks/'+link+'.txt', 'w+')
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -75,10 +75,12 @@ for link in files:
 
     cap.release()
     out.release()
-
+    """
     # Concatenate 2 videos
     clip_1 = VideoFileClip(input_path+'/'+link)
     clip_2 = VideoFileClip(output_path+'/videos/'+link)
     final_clip = clips_array([[clip_1, clip_2]])
     final_clip.write_videofile(output_path+'/black_videos/'+link, codec="libx264")
+    """
     cv2.destroyAllWindows()
+

@@ -43,9 +43,13 @@ del argv[0]
 for link in files:
     print(link)
     cap = cv2.VideoCapture(input_path+'/'+link)
-    out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 20,(640,480))
-    file_landmarks = open(output_path+'/landmarks/'+link, 'w+')
-
+    h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    w = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    f = int(cap.get(cv2.CAP_PROP_FPS))
+    print(h)
+    out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('M','J','P','G'), f,(h,w))
+    file_landmarks = open(output_path+'/landmarks/'+link+'.txt', 'w+')
+    i = 1
     while cap.isOpened():
         ret, frame = cap.read()
 
@@ -60,6 +64,7 @@ for link in files:
         landmarks = results.pose_landmarks
 
         # Recolor Feed
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image[0:1000, 0:1000] = (0, 0, 0)
 
         if results.pose_landmarks:

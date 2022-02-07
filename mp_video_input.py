@@ -46,7 +46,6 @@ for link in files:
     h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     w = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     f = int(cap.get(cv2.CAP_PROP_FPS))
-    print(h)
     out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('M','J','P','G'), f,(h,w))
     file_landmarks = open(output_path+'/landmarks/'+link+'.txt', 'w+')
     i = 1

@@ -72,7 +72,7 @@ for link in files:
                                   )
             file_landmarks.write(str(results.pose_landmarks))
 
-        cv2.imshow("Video Feed", image)
+        # cv2.imshow("Video Feed", image)
         out.write(image)
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break

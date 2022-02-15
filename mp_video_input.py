@@ -21,6 +21,10 @@ pose = mpPose.Pose(
 )
 
 landmarks_to_exclude = [1,2,3,4,5,6,7,8,9,10,17,18,19,20,21,22,29,30,31,32]
+body_parts = ['root','lowerback','upperback','thorax','lowerneck','upperneck','head','rclavicle','rhumerus',
+              'rradius','rwrist','rhand','rfingers','rthumb','lclavicle','lhumerus','lradius','lwrist',
+              'lhand','lfingers','lthumb','rfemur','rtibia','rfoot','rtoes','lfemur','ltibia','lfoot',
+              'ltoes']
 
 input_path = './'+argv[1]
 output_path = './'+argv[2]
@@ -74,20 +78,23 @@ for link in files:
         #   32 => [...]
         # }
         # because animation in threejs takes into consideration each points seperately from the other
-        for index in landmarks_to_exclude:
-            landmarks.landmark[index].visibility = 0.0
+
 
         # Recolor Feed
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image[0:1000, 0:1000] = (0, 0, 0)
         if landmarks:
+            for index in landmarks_to_exclude:
+                landmarks.landmark[index].visibility = 0.0
             #num_array[2:7] = array('i', range(22, 27))
             mpDraw.draw_landmarks(image, landmarks, None,
                                   mpDraw.DrawingSpec(color=(224, 224, 224), thickness=2, circle_radius=1),
                                   )
-            file_landmarks.write(str(landmarks))
+            file_landmarks.write(str(i)+'\n')
+            for index in range(29):
+                file_landmarks.write(body_parts[index]+' '+str(landmarks.landmark[index].x*10)+' '+str(landmarks.landmark[index].y*10)+' '+str(landmarks.landmark[index].z*10)+'\n')
+            i+=1
 
-        cv2.imshow("Video Feed", image)
         out.write(image)
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break
@@ -100,4 +107,7 @@ for link in files:
     clip_2 = VideoFileClip(output_path+'/videos/'+link)
     final_clip = clips_array([[clip_1, clip_2]])
     final_clip.write_videofile(output_path+'/black_videos/'+link, codec="libx264")
+    clip_2.close()
+    clip_1.close()
+    final_clip.close()
     cv2.destroyAllWindows()

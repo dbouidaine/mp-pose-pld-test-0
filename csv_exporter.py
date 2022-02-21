@@ -1,0 +1,120 @@
+import os
+import sys
+
+import cv2
+import mediapipe as mp
+from moviepy.editor import *
+from sys import argv
+from os import listdir
+from mediapipe.framework.formats import landmark_pb2
+
+
+if argv[1] is None :
+    sys.exit(-1)
+
+mpDraw = mp.solutions.drawing_utils
+mpPose = mp.solutions.pose
+pose = mpPose.Pose(
+    static_image_mode=False,
+    model_complexity=2,
+    smooth_landmarks=True,
+)
+
+landmarks_to_exclude = [1,2,3,4,5,6,7,8,9,10,17,18,19,20,21,22,29,30,31,32]
+body_parts = ['root','lowerback','upperback','thorax','lowerneck','upperneck','head','rclavicle','rhumerus',
+              'rradius','rwrist','rhand','rfingers','rthumb','lclavicle','lhumerus','lradius','lwrist',
+              'lhand','lfingers','lthumb','rfemur','rtibia','rfoot','rtoes','lfemur','ltibia','lfoot',
+              'ltoes']
+body_parts_csv = [  "LBWT","RBWT","LFWT" ,
+ 	                "LTHI" ,"RFRM" ,
+                    "RTHI" ,"RWRB" ,"RWRA","STRN" ,"T10" ,
+                    "RFIN","RUPA","LKNE" ,"RKNE","LUPA","CLAV",
+                    "LELB","RSHO","LFRM" ,"LSHN","RSHN","LBHD" ,
+                    "LFHD","RBHD" ,"RFHD" ,"RANK" ,"LANK" ,"RHEE" ,
+                    "LHEE" ,"LTOE" ,"RTOE" ,"LMT5" ,"RMT5" ,"RFWT" ,"RELB" ,
+                    "RBAC" ,"LSHO" ,"C7" ,"LWRA" ,"LFIN" ,"LWRB" ,
+                    "RBAC_1" 
+]
+
+input_path = './'+argv[1]
+output_path = './'+argv[2]
+print(output_path+'/landmarks')
+separator = " , "
+files = os.listdir(input_path)
+try:
+    os.makedirs(output_path + '/landmarks')
+except OSError as error:
+    print(error)
+
+del argv[0]
+
+for link in files:
+    print(link)
+    cap = cv2.VideoCapture(input_path+'/'+link)
+    h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    w = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    f = int(cap.get(cv2.CAP_PROP_FPS))
+    # frames timestamp
+
+    out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('m','p','4','v'), f,(h,w))
+    file_landmarks = open(output_path+'/landmarks/'+link+'.csv', 'w+')
+    file_landmarks.write("Time (s)")
+    for joint in body_parts:
+        file_landmarks.write(separator+str(joint)+"_X (m)")
+        file_landmarks.write(separator + str(joint) + "_Y (m)")
+        file_landmarks.write(separator + str(joint) + "_Z (m)")
+    i = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if ret:
+            # Recolor Feed
+            if frame is not None:
+                image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            else:
+                break
+
+            # Make Predictions
+            results = pose.process(image)
+            landmarks = results.pose_landmarks
+            # print(landmarks.landmark) maybe the solution to the problem of exporting landmarks
+            # is to export the sequence of landmarks for each point like this :
+            # {
+            #   0 => [0.1,0.2,...etc],
+            #   1 => [...],
+            #   ...,
+            #   32 => [...]
+            # }
+            # because animation in threejs takes into consideration each points seperately from the other
+
+            # Recolor Feed
+            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            image[0:1000, 0:1000] = (0, 0, 0)
+            if landmarks:
+                for index in landmarks_to_exclude:
+                    landmarks.landmark[index].visibility = 0.0
+                # num_array[2:7] = array('i', range(22, 27))
+                mpDraw.draw_landmarks(image, landmarks, None,
+                                      mpDraw.DrawingSpec(color=(224, 224, 224), thickness=2, circle_radius=1),
+                                      )
+                cv2.imshow("Video Feed", image)
+                frame_time = i / f
+                file_landmarks.write("\n%.3f"%frame_time)
+                for index in range(29):
+                    file_landmarks.write(separator+"%.6f"%landmarks.landmark[index].x+
+                                         separator+"%.6f"%landmarks.landmark[index].y+
+                                         separator+"%.6f"%landmarks.landmark[index].z)
+                i += 1
+
+            out.write(image)
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
+        else:
+            break
+
+
+
+    cap.release()
+    out.release()
+
+    file_landmarks.close()
+    cv2.destroyAllWindows()

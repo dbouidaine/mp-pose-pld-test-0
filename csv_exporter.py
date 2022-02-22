@@ -22,10 +22,17 @@ pose = mpPose.Pose(
 
 landmarks_to_exclude = [1,2,3,4,5,6,7,8,9,10,17,18,19,20,21,22,29,30,31,32]
 body_parts_mp = ['nose','nose']
+body_parts = ["Marker_1","Marker_2","Marker_3","Marker_4","Marker_5","Marker_6"
+,"Marker_7","Marker_8","Marker_9","Marker_10","Marker_11"
+,"Marker_12","Marker_13","Marker_14","Marker_15","Marker_16"
+,"Marker_17","Marker_18","Marker_19","Marker_20","Marker_21"
+,"Marker_22","Marker_23","Marker_24","Marker_25","Marker_26"
+,"Marker_27","Marker_28","Marker_29"]
+"""
 body_parts = ['root','lowerback','upperback','thorax','lowerneck','upperneck','head','rclavicle','rhumerus',
               'rradius','rwrist','rhand','rfingers','rthumb','lclavicle','lhumerus','lradius','lwrist',
               'lhand','lfingers','lthumb','rfemur','rtibia','rfoot','rtoes','lfemur','ltibia','lfoot',
-              'ltoes']
+              'ltoes']"""
 body_parts_csv = [  "LBWT","RBWT","LFWT" ,
  	                "LTHI" ,"RFRM" ,
                     "RTHI" ,"RWRB" ,"RWRA","STRN" ,"T10" ,
@@ -40,7 +47,7 @@ body_parts_csv = [  "LBWT","RBWT","LFWT" ,
 input_path = './'+argv[1]
 output_path = './'+argv[2]
 print(output_path+'/landmarks')
-separator = " , "
+separator = ","
 files = os.listdir(input_path)
 try:
     os.makedirs(output_path + '/landmarks')
@@ -61,9 +68,9 @@ for link in files:
     file_landmarks = open(output_path+'/landmarks/'+link+'.csv', 'w+')
     file_landmarks.write("Time")
     for joint in body_parts:
-        file_landmarks.write(separator+"X_"+str(joint)+"_joint")
-        file_landmarks.write(separator + "Y_"+str(joint) + "_joint")
-        file_landmarks.write(separator +"Z_"+ str(joint) + "_joint")
+        file_landmarks.write(separator+"X_"+str(joint))
+        file_landmarks.write(separator + "Y_"+str(joint))
+        file_landmarks.write(separator +"Z_"+ str(joint))
     i = 0
     while cap.isOpened():
         ret, frame = cap.read()
@@ -100,10 +107,11 @@ for link in files:
                 cv2.imshow("Video Feed", image)
                 frame_time = i / f
                 file_landmarks.write("\n%.3f"%frame_time)
+                # yzx
                 for index in range(29):
-                    file_landmarks.write(separator+"%.6f"%landmarks.landmark[index].x+
-                                         separator+"%.6f"%landmarks.landmark[index].y+
-                                         separator+"%.6f"%landmarks.landmark[index].z)
+                    file_landmarks.write(separator+"%.6f"%(landmarks.landmark[index].x*1000)+
+                                         separator+"%.6f"%(landmarks.landmark[index].z*1000)+
+                                         separator+"%.6f"%((landmarks.landmark[index].y*-1000)+700))
                 i += 1
 
             out.write(image)

@@ -21,6 +21,7 @@ pose = mpPose.Pose(
 )
 
 landmarks_to_exclude = [1,2,3,4,5,6,7,8,9,10,17,18,19,20,21,22,29,30,31,32]
+body_parts_mp = ['nose','nose']
 body_parts = ['root','lowerback','upperback','thorax','lowerneck','upperneck','head','rclavicle','rhumerus',
               'rradius','rwrist','rhand','rfingers','rthumb','lclavicle','lhumerus','lradius','lwrist',
               'lhand','lfingers','lthumb','rfemur','rtibia','rfoot','rtoes','lfemur','ltibia','lfoot',
@@ -58,11 +59,11 @@ for link in files:
 
     out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('m','p','4','v'), f,(h,w))
     file_landmarks = open(output_path+'/landmarks/'+link+'.csv', 'w+')
-    file_landmarks.write("Time (s)")
+    file_landmarks.write("Time")
     for joint in body_parts:
-        file_landmarks.write(separator+str(joint)+"_X (m)")
-        file_landmarks.write(separator + str(joint) + "_Y (m)")
-        file_landmarks.write(separator + str(joint) + "_Z (m)")
+        file_landmarks.write(separator+"X_"+str(joint)+"_joint")
+        file_landmarks.write(separator + "Y_"+str(joint) + "_joint")
+        file_landmarks.write(separator +"Z_"+ str(joint) + "_joint")
     i = 0
     while cap.isOpened():
         ret, frame = cap.read()

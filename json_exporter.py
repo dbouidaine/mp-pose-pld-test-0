@@ -67,7 +67,7 @@ for link in files:
     out = cv2.VideoWriter(output_path+'/videos/'+link, cv2.VideoWriter_fourcc('m','p','4','v'), f,(h,w))
     file_landmarks = open(output_path+'/landmarks/'+link+'.json', 'w+')
     data_to_print = {
-        'frequency': f,
+        'frequency': 1000/f,
         'landmarks':[]
     }
     i = 0

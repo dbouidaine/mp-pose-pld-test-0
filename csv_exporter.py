@@ -106,11 +106,11 @@ for link in files:
                                       )
                 cv2.imshow("Video Feed", image)
                 frame_time = i / f
-                file_landmarks.write("\n%.3f"%frame_time)
+                file_landmarks.write("\n%.3f"%frame_time*1000)
                 # yzx
                 for index in range(29):
                     file_landmarks.write(separator+"%.6f"%(landmarks.landmark[index].x*1000)+
-                                         separator+"%.6f"%(landmarks.landmark[index].z*1000)+
+                                         separator+"0.000000"+
                                          separator+"%.6f"%((landmarks.landmark[index].y*-1000)+700))
                 i += 1
 

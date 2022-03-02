@@ -68,7 +68,7 @@ for link in files:
     file_landmarks = open(output_path+'/landmarks/'+link+'.json', 'w+')
     data_to_print = {
         'frequency': f,
-        'landmarks':[[]]
+        'landmarks':[]
     }
     i = 0
     while cap.isOpened():
@@ -106,12 +106,17 @@ for link in files:
                 cv2.imshow("Video Feed", image)
                 frame_time = i / f
                 # yzx
-                landmarks_array=[]
+                landmarks_all_frames=[]
                 for index in range(29):
-                    landmarks_array.append(landmarks.landmark[index])
+                    landmarks_frame={}
+                    landmarks_frame['x'] = landmarks.landmark[index].x
+                    landmarks_frame['y'] = landmarks.landmark[index].y
+                    landmarks_frame['z'] = landmarks.landmark[index].z
+                    landmarks_frame['visibility'] = landmarks.landmark[index].visibility
+                    landmarks_all_frames.append(landmarks_frame)
                     if i == 1:
                         print (data_to_print)
-                data_to_print['landmarks'].append(landmarks_array)
+                data_to_print['landmarks'].append(landmarks_all_frames)
                 i += 1
 
             out.write(image)

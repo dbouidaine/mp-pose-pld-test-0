@@ -105,8 +105,8 @@ for link in files:
                                       mpDraw.DrawingSpec(color=(224, 224, 224), thickness=2, circle_radius=1),
                                       )
                 cv2.imshow("Video Feed", image)
-                frame_time = i / f
-                file_landmarks.write("\n%.3f"%frame_time*1000)
+                frame_time = (i / f) * 1000
+                file_landmarks.write("\n%.3f"%frame_time)
                 # yzx
                 for index in range(29):
                     file_landmarks.write(separator+"%.6f"%(landmarks.landmark[index].x*1000)+

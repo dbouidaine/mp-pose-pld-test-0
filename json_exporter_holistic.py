@@ -3,6 +3,7 @@ import sys
 import json
 import cv2
 import mediapipe as mp
+import numpy as np
 from moviepy.editor import *
 from sys import argv
 from os import listdir
@@ -13,6 +14,16 @@ if argv[1] is None :
     sys.exit(-1)
 
 mpDraw = mp.solutions.drawing_utils
+mpHolistic = mp.solutions.holistic
+holistic = mpHolistic.Holistic(
+    static_image_mode=False,
+    model_complexity=2,
+    enable_segmentation=False,
+    refine_face_landmarks=True,
+    smooth_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
 mpPose = mp.solutions.pose
 pose = mpPose.Pose(
     static_image_mode=False,
@@ -20,7 +31,7 @@ pose = mpPose.Pose(
     smooth_landmarks=True,
 )
 
-landmarks_to_exclude = [1,2,3,4,5,6,7,8,9,10,17,18,19,20,21,22,29,30,31,32]
+landmarks_to_exclude = [1,2,3,4,5,6,7,8,9,10,17,18,19,20,21,22]
 body_parts_mp = ['nose','nose']
 body_parts = ["Marker_1","Marker_2","Marker_3","Marker_4","Marker_5","Marker_6"
 ,"Marker_7","Marker_8","Marker_9","Marker_10","Marker_11"
@@ -81,8 +92,22 @@ for link in files:
                 break
 
             # Make Predictions
-            results = pose.process(image)
-            landmarks = results.pose_landmarks
+            # results = pose.process(image)
+            results = holistic.process(image)
+            pose_landmarks = results.pose_landmarks
+            if(pose_landmarks):
+                for index in landmarks_to_exclude:
+                    pose_landmarks.landmark[index].visibility = 0
+            landmarks = np.concatenate(
+                (
+                    pose_landmarks,
+                    results.left_hand_landmarks,
+                    results.right_hand_landmarks,
+                    results.face_landmarks
+                ),
+                axis=None
+            )
+
             # print(landmarks.landmark) maybe the solution to the problem of exporting landmarks
             # is to export the sequence of landmarks for each point like this :
             # {
@@ -96,30 +121,35 @@ for link in files:
             # Recolor Feed
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image[0:1000, 0:1000] = (0, 0, 0)
-            if landmarks:
-                for index in landmarks_to_exclude:
-                    landmarks.landmark[index].visibility = 0.0
-                # num_array[2:7] = array('i', range(22, 27))
-                mpDraw.draw_landmarks(image, landmarks, None,
-                                      mpDraw.DrawingSpec(color=(224, 224, 224), thickness=2, circle_radius=1),
-                                      )
-                cv2.imshow("Video Feed", image)
-                frame_time = i / f
-                # yzx
-                landmarks_all_frames=[]
-                for index in range(29):
-                    landmarks_frame={}
-                    landmarks_frame['x'] = landmarks.landmark[index].x
-                    landmarks_frame['y'] = landmarks.landmark[index].y
-                    landmarks_frame['z'] = landmarks.landmark[index].z
-                    landmarks_frame['visibility'] = landmarks.landmark[index].visibility
-                    landmarks_all_frames.append(landmarks_frame)
-                    if i == 1:
-                        print (data_to_print)
-                data_to_print['landmarks'].append([landmarks_all_frames])
-                i += 1
+            frame_time = i / f
 
-            out.write(image)
+            landmarks_all_frames = []
+            for body_part in landmarks:
+                if(i == 0):
+                    if(body_part) :
+                        for new_landmark in (body_part.landmark):
+                            landmark_frame = {}
+                            landmark_frame['x'] = new_landmark.x
+                            landmark_frame['y'] = new_landmark.y
+                            if(new_landmark.visibility):
+                                landmark_frame['visibility'] = new_landmark.visibility
+                            landmarks_all_frames.append(landmark_frame)
+            data_to_print['landmarks'].append([landmarks_all_frames])
+            # yzx
+
+            """for index in range(len(landamrks)):
+                landmarks_frame={}
+                landmarks_frame['x'] = landmarks.landmark[index].x
+                landmarks_frame['y'] = landmarks.landmark[index].y
+                landmarks_frame['z'] = landmarks.landmark[index].z
+                landmarks_frame['visibility'] = landmarks.landmark[index].visibility
+                landmarks_all_frames.append(landmarks_frame)
+                if i == 1:
+                    print (data_to_print)
+            data_to_print['landmarks'].append([landmarks_all_frames])
+            i += 1
+            """
+
             if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
         else:

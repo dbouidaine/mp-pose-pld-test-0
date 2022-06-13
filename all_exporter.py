@@ -49,15 +49,27 @@ input_path = './'+argv[1]
 output_path = './'+argv[2]
 print(output_path+'/landmarks')
 separator = ","
+
 files = os.listdir(input_path)
 try:
     os.makedirs(output_path + '/landmarks')
 except OSError as error:
     print(error)
 
+try:
+    os.makedirs(output_path + '/videos')
+except OSError as error:
+    print(error)
+
+try:
+    os.makedirs(output_path + '/black_videos')
+except OSError as error:
+    print(error)
+
 del argv[0]
 num_links = len(files)
 i_bar = 0
+
 with progressbar.ProgressBar(max_value=num_links+1) as bar:
     for link in files:
         i_bar+=1
@@ -103,8 +115,8 @@ with progressbar.ProgressBar(max_value=num_links+1) as bar:
                     # because animation in threejs takes into consideration each points seperately from the other
 
                     # Recolor Feed
-                    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    image[0:1000, 0:1000] = (0, 0, 0)
+                    # cv2.imshow("Video Feed", image)
+                    image[0:w, 0:h] = (0, 0, 0)
                     if landmarks:
                         for index in landmarks_to_exclude:
                             landmarks.landmark[index].visibility = 0.0
@@ -138,4 +150,14 @@ with progressbar.ProgressBar(max_value=num_links+1) as bar:
         out.release()
 
         file_landmarks.close()
+        
+
+        # Concatenate 2 videos
+        clip_1 = VideoFileClip(input_path+'/'+link)
+        clip_2 = VideoFileClip(output_path+'/videos/'+link)
+        final_clip = clips_array([[clip_1, clip_2]])
+        final_clip.write_videofile(output_path+'/black_videos/'+link, codec="libx264")
+        clip_2.close()
+        clip_1.close()
+        final_clip.close()
         cv2.destroyAllWindows()

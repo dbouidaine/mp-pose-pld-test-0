@@ -65,7 +65,7 @@ for link in files:
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         else:
             break
-
+        
         # Make Predictions
         results = pose.process(image)
         landmarks = results.pose_landmarks
@@ -82,6 +82,7 @@ for link in files:
 
         # Recolor Feed
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        cv2.imshow("Video Feed", image)
         image[0:1000, 0:1000] = (0, 0, 0)
         if landmarks:
             for index in landmarks_to_exclude:
